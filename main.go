@@ -3,8 +3,8 @@ package main
 import (
 	"encoding/json"
 	"net/http"
-	"github.com/gorilla/mux"
 	"strconv"
+	"github.com/gorilla/mux"
 )
 
 var profiles []Profile = []Profile{}
@@ -32,20 +32,20 @@ func addItem(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(profiles)
 }
 
-func getAllProfiles(q http.ResponseWriter, r *http.Request){
-	q.Header().Set("Content-Type","application/json")
+func getAllProfiles(q http.ResponseWriter, r *http.Request) {
+	q.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(q).Encode(profiles)
 }
 
-func getProfile(q http.ResponseWriter, r *http.Request){
+func getProfile(q http.ResponseWriter, r *http.Request) {
 	var idParam string = mux.Vars(r)["id"]
-    id, err := strconv.Atoi(idParam)
-	if err!=nil{
+	id, err := strconv.Atoi(idParam)
+	if err != nil {
 		q.WriteHeader(400)
 		q.Write([]byte("ID could not be converted to integer"))
 		return
 	}
-	if id>=len(profiles){
+	if id >= len(profiles) {
 		q.WriteHeader(404)
 		q.Write([]byte("No profile found with specified ID"))
 		return
@@ -55,15 +55,15 @@ func getProfile(q http.ResponseWriter, r *http.Request){
 	json.NewEncoder(q).Encode(profile)
 }
 
-func updateProfile(q http.ResponseWriter, r *http.Request){
+func updateProfile(q http.ResponseWriter, r *http.Request) {
 	var idParam string = mux.Vars(r)["id"]
-    id, err := strconv.Atoi(idParam)
-	if err!=nil{
+	id, err := strconv.Atoi(idParam)
+	if err != nil {
 		q.WriteHeader(400)
 		q.Write([]byte("ID could not be converted to integer"))
 		return
 	}
-	if id>=len(profiles){
+	if id >= len(profiles) {
 		q.WriteHeader(404)
 		q.Write([]byte("No profile found with specified ID"))
 		return
@@ -71,8 +71,8 @@ func updateProfile(q http.ResponseWriter, r *http.Request){
 	var updateProfile Profile
 	json.NewDecoder(r.Body).Decode(&updateProfile)
 
-	profiles[id]=updateProfile
-	q.Header().Set("Content-Type","application/json")
+	profiles[id] = updateProfile
+	q.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(q).Encode(updateProfile)
 }
 
@@ -91,38 +91,19 @@ func deleteProfile(q http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Remove the element at the specified index
 	profiles = append(profiles[:id], profiles[id+1:]...)
 
 	q.WriteHeader(http.StatusOK)
 }
-
-// func deleteProfile(q http.ResponseWriter, r *http.Request){
-// 	var idParam string = mux.Vars(r)["id"]
-//     id, err := strconv.Atoi(idParam)
-// 	if err!=nil{
-// 		q.WriteHeader(400)
-// 		q.Write([]byte("ID could not be converted to integer"))
-// 		return
-// 	}
-// 	if id>=len(profiles){
-// 		q.WriteHeader(404)
-// 		q.Write([]byte("No profile found with specified ID"))
-// 		return
-// 	}
-	
-// 	profiles = append(profiles[:id], profiles[:id+1:]... )
-// 	q.WriteHeader(200)
-// 	}
 
 func main() {
 	router := mux.NewRouter()
 
 	router.HandleFunc("/profiles", addItem).Methods("POST")
 	router.HandleFunc("/profiles", getAllProfiles).Methods("GET")
-    router.HandleFunc("/profiles/{id}", getProfile).Methods("GET")
+	router.HandleFunc("/profiles/{id}", getProfile).Methods("GET")
 	router.HandleFunc("/profiles/{id}", updateProfile).Methods("PUT")
 	router.HandleFunc("/profiles/{id}", deleteProfile).Methods("DELETE")
-	
+
 	http.ListenAndServe(":5000", router)
 }
