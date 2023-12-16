@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"github.com/gorilla/mux"
+	"strconv"
 )
 
 var profiles []Profile = []Profile{}
@@ -36,12 +37,30 @@ func getAllProfiles(q http.ResponseWriter, r *http.Request){
 	json.NewEncoder(q).Encode(profiles)
 }
 
+func getProfile(q http.ResponseWriter, r *http.Request){
+	var idParam string = mux.Vars(r)["id"]
+    id, err := strconv.Atoi(idParam)
+	if err!=nil{
+		q.WriteHeader(400)
+		q.Write([]byte("ID could not be converted to integer"))
+		return
+	}
+	if id>=len(profiles){
+		q.WriteHeader(404)
+		q.Write([]byte("No profile found with specified ID"))
+		return
+	}
+	profile := profiles[id]
+	q.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(q).Encode(profile)
+}
+
 func main() {
 	router := mux.NewRouter()
 
 	router.HandleFunc("/profiles", addItem).Methods("POST")
 	router.HandleFunc("/profiles", getAllProfiles).Methods("GEt")
-
+    router.HandleFunc("/profiles/{id}", getProfile).Methods("GET")
 	http.ListenAndServe(":5000", router)
 }
 
