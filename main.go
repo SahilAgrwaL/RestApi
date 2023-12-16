@@ -31,10 +31,16 @@ func addItem(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(profiles)
 }
 
+func getAllProfiles(q http.ResponseWriter, r *http.Request){
+	q.Header().Set("Content-Type","application/json")
+	json.NewEncoder(q).Encode(profiles)
+}
+
 func main() {
 	router := mux.NewRouter()
 
 	router.HandleFunc("/profiles", addItem).Methods("POST")
+	router.HandleFunc("/profiles", getAllProfiles).Methods("GEt")
 
 	http.ListenAndServe(":5000", router)
 }
