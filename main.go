@@ -76,6 +76,45 @@ func updateProfile(q http.ResponseWriter, r *http.Request){
 	json.NewEncoder(q).Encode(updateProfile)
 }
 
+func deleteProfile(q http.ResponseWriter, r *http.Request) {
+	var idParam string = mux.Vars(r)["id"]
+	id, err := strconv.Atoi(idParam)
+	if err != nil {
+		q.WriteHeader(http.StatusBadRequest)
+		q.Write([]byte("ID could not be converted to integer"))
+		return
+	}
+
+	if id >= len(profiles) || id < 0 {
+		q.WriteHeader(http.StatusNotFound)
+		q.Write([]byte("No profile found with specified ID"))
+		return
+	}
+
+	// Remove the element at the specified index
+	profiles = append(profiles[:id], profiles[id+1:]...)
+
+	q.WriteHeader(http.StatusOK)
+}
+
+// func deleteProfile(q http.ResponseWriter, r *http.Request){
+// 	var idParam string = mux.Vars(r)["id"]
+//     id, err := strconv.Atoi(idParam)
+// 	if err!=nil{
+// 		q.WriteHeader(400)
+// 		q.Write([]byte("ID could not be converted to integer"))
+// 		return
+// 	}
+// 	if id>=len(profiles){
+// 		q.WriteHeader(404)
+// 		q.Write([]byte("No profile found with specified ID"))
+// 		return
+// 	}
+	
+// 	profiles = append(profiles[:id], profiles[:id+1:]... )
+// 	q.WriteHeader(200)
+// 	}
+
 func main() {
 	router := mux.NewRouter()
 
@@ -83,6 +122,7 @@ func main() {
 	router.HandleFunc("/profiles", getAllProfiles).Methods("GET")
     router.HandleFunc("/profiles/{id}", getProfile).Methods("GET")
 	router.HandleFunc("/profiles/{id}", updateProfile).Methods("PUT")
+	router.HandleFunc("/profiles/{id}", deleteProfile).Methods("DELETE")
 	
 	http.ListenAndServe(":5000", router)
 }
